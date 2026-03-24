@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Rules\FieldRules\Blinds25;
+
+use App\Models\AttributeValue;
+use App\Models\Product;
+use App\Rules\FieldRules\AbstractFieldRangeRule;
+use Filament\Forms\Get;
+
+class Wood25HeightRangeRule extends AbstractFieldRangeRule
+{
+    private const int PRODUCT_ID = 3;
+    private const string INPUT_NAME = '23.125'; // wysokość
+    private const string BLIND_TYPE_SLUG = 'zaluzje_drewniane_25_mm';
+
+    private const float MIN_H = 30.0;
+    private const float MAX_H = 420.0;
+
+    protected function config(): array
+    {
+        return [
+            'product_id' => self::PRODUCT_ID,
+            'input_name' => self::INPUT_NAME,
+            'range' => ['min' => self::MIN_H, 'max' => self::MAX_H],
+        ];
+    }
+
+    protected function determineRange(Product $product, array $formData): array
+    {
+        if (
+            !empty($formData) &&
+            isset($formData['rodzaj_zaluzji'])
+        ) {
+            $blindType = AttributeValue::find($formData['rodzaj_zaluzji']);
+            if ($blindType && $blindType->name === self::BLIND_TYPE_SLUG) {
+                return $this->config()['range'];
+            }
+        }
+
+        return [];
+    }
+
+    protected function buildFormDataFromGet(Get $get): array
+    {
+        return [
+            'rodzaj_zaluzji' => $get('rodzaj_zaluzji'),
+        ];
+    }
+
+    public function productIds(): array
+    {
+        return [self::PRODUCT_ID];
+    }
+}
